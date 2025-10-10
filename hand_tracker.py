@@ -8,7 +8,18 @@ class HandTracker:
         hands, img = self.detector.findHands(img)
         if hands:
             hand = hands[0]
-            lmList = hand["lmList"]  # 21
+            lmList = hand["lmList"]  # 21 landmarks
             fingers = self.detector.fingersUp(hand)
             return lmList, fingers, img
-        return None, None, img
+        return None, None, img   
+    
+    def find_hands(self, img):   #multiple hands
+        hands, img = self.detector.findHands(img)
+        if hands:
+            results = []
+            for hand in hands:
+                lmList = hand["lmList"]
+                fingers = self.detector.fingersUp(hand) 
+                results.append((lmList, fingers))
+            return results, img
+        return None, img    

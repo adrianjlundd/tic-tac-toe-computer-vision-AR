@@ -11,7 +11,7 @@ class TicTacToe:
             self.board[row, col] = self.current_player
             if self.check_winner():
                 self.winner = self.current_player
-            self.current_player = 3 - self.current_player  # bytt spiller
+            self.current_player = 3 - self.current_player  # change player
 
     def check_winner(self):
         b = self.board
