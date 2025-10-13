@@ -1,17 +1,20 @@
 from cvzone.HandTrackingModule import HandDetector
 
 class HandTracker:
-    def __init__(self, max_hands=1, detection_confidence=0.8):
+    def __init__(self, max_hands=1, detection_confidence=0.75): #use 0.75
         self.detector = HandDetector(maxHands=max_hands, detectionCon=detection_confidence)
 
     def find_hand(self, img):
+        """
+        Returns lmList
+        """
         hands, img = self.detector.findHands(img)
         if hands:
             hand = hands[0]
             lmList = hand["lmList"]  # 21 landmarks
             fingers = self.detector.fingersUp(hand)
             return lmList, fingers, img
-        return None, None, img   
+        return None, None, img    
     
     def find_hands(self, img):   #multiple hands
         hands, img = self.detector.findHands(img)
