@@ -1,11 +1,13 @@
 import numpy as np
 import random
+from game.ai import minimax
 
 class TicTacToe:
     def __init__(self):
         self.board = np.zeros((3, 3), dtype=int)
         self.current_player = 1
         self.winner = None
+        self.difficulty = "easy"  # "easy" or "hard"
 
     def make_move(self, row, col):
         if self.board[row, col] == 0 and not self.winner:
@@ -18,11 +20,39 @@ class TicTacToe:
                 self.current_player = 3 - self.current_player
 
     def ai_move(self):
-        """AI makes a random move"""
+        """AI makes a move based on difficulty level"""
+        if self.difficulty == "easy":
+            return self.easy_move()
+        elif self.difficulty == "hard":
+            return self.hard_move()
+        
+    def easy_move(self):
+        """Easy AI - makes completely random moves"""
         empty_cells = [(r, c) for r in range(3) for c in range(3) if self.board[r, c] == 0]
         if empty_cells:
             row, col = random.choice(empty_cells)
             self.make_move(row, col)
+            return True
+        return False
+
+    def hard_move(self):
+        """Hard AI - uses minimax for perfect play"""
+        best_score = float('-inf')
+        best_move = None
+        
+        for row in range(3):
+            for col in range(3):
+                if self.board[row, col] == 0:
+                    self.board[row, col] = 2  # AI is player 2
+                    score = minimax(self.board, 0, False)
+                    self.board[row, col] = 0  # Undo move
+                    
+                    if score > best_score:
+                        best_score = score
+                        best_move = (row, col)
+        
+        if best_move:
+            self.make_move(best_move[0], best_move[1])
             return True
         return False
 

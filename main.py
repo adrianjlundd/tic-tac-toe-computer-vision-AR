@@ -6,8 +6,9 @@ from gui.ui_helpers import get_cell_from_pos
 
 class GameState:
     SELECTING_PLAYERS = 0
-    PLAYING = 1
-    GAME_OVER = 2
+    SELECTING_DIFFICULTY = 1
+    PLAYING = 2
+    GAME_OVER = 3
 
 def main():
     cap = cv2.VideoCapture(0)
@@ -47,7 +48,7 @@ def main():
             if start_cooldown > 0:
                 start_cooldown -= 1
                 cv2.putText(img, f"Starting in: {start_cooldown//30 + 1}s", 
-                            (img.shape[1]//2 - 300, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                            (img.shape[1]//2 - 100, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             
             cv2.putText(img, "Select number of players:", (50, 100),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
@@ -58,18 +59,58 @@ def main():
             
             if fingers and selection_cooldown == 0 and start_cooldown == 0:
                 num_fingers = sum(fingers)
-                if num_fingers in [1, 2] and num_fingers != last_finger_count:
+                if num_fingers in [1, 2]: #and num_fingers != last_finger_count fjernet
                     num_players = num_fingers
-                    game_state = GameState.PLAYING
+                    last_finger_count = num_fingers
+                    
+                    if num_players == 1:
+                        game_state = GameState.SELECTING_DIFFICULTY
+                        selection_cooldown = 90  # 3 second cooldown before difficulty selection
+                    else:
+                        game_state = GameState.PLAYING
+                        selection_cooldown = 60
+                    
                     print(f"Selected {num_players} player game")
+
+        elif game_state == GameState.SELECTING_DIFFICULTY:
+            # Wait for cooldown before accepting difficulty selection
+            if selection_cooldown > 0:
+                remaining_time = selection_cooldown // 30 + 1
+                cv2.putText(img, f"Select in: {remaining_time}s", 
+                            (img.shape[1]//2 - 80, 250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+            
+            # Draw difficulty selection screen
+            cv2.putText(img, "Select AI difficulty:", (50, 100),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            cv2.putText(img, "1 finger = Easy", (50, 150),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            cv2.putText(img, "2 fingers = Hard", (50, 200),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            
+            # Check for difficulty selection (only after cooldown)
+            if fingers and selection_cooldown == 0:
+                num_fingers = sum(fingers)
+                if num_fingers in [1, 2]: #and num_fingers != last_finger_count fjernet det
+                    if num_fingers == 1:
+                        game.difficulty = "easy"
+                        print("Selected Easy difficulty")
+                    else:
+                        game.difficulty = "hard" 
+                        print("Selected Hard difficulty")
+                    
+                    game_state = GameState.PLAYING
                     selection_cooldown = 60
                     last_finger_count = num_fingers
 
         elif game_state == GameState.PLAYING:
             img = draw_board(img, game.board)
             
+            # Display current player and difficulty info
             if num_players == 1:
-                player_text = "Your turn (X)" if game.current_player == 1 else "AI's turn (O)"
+                if game.current_player == 1:
+                    player_text = "Your turn (X)"
+                else:
+                    player_text = f"AI ({game.difficulty})"
             else:
                 player_text = "Player 1 (X)" if game.current_player == 1 else "Player 2 (O)"
             
@@ -94,7 +135,7 @@ def main():
             
             if game.winner is not None:
                 game_state = GameState.GAME_OVER
-                selection_cooldown = 60
+                selection_cooldown = 90  # 3 second cooldown after game over
 
         elif game_state == GameState.GAME_OVER:
             img = draw_board(img, game.board)
@@ -119,7 +160,7 @@ def main():
                     game_state = GameState.SELECTING_PLAYERS
                     num_players = None
                     start_cooldown = 150
-                    selection_cooldown = 60
+                    selection_cooldown = 90  # 3 second cooldown
                 elif num_fingers == 2:
                     break
 
