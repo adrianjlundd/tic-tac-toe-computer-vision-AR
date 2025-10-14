@@ -11,6 +11,9 @@ class GameState:
 
 def main():
     cap = cv2.VideoCapture(0)
+    
+
+    
     tracker = HandTracker()
     game = TicTacToe()
     
@@ -18,7 +21,7 @@ def main():
     num_players = None
     last_finger_count = 0
     selection_cooldown = 0
-    start_cooldown = 150  # 5 seconds cooldown at ~30fps   150/30 = 50 s
+    start_cooldown = 150  # 5 seconds cooldown at ~30fps
 
     print("Press 'q' to quit")
 
@@ -48,7 +51,7 @@ def main():
             # Initial cooldown period - show countdown
             if start_cooldown > 0:
                 start_cooldown -= 1
-                cv2.putText(img, f"Starting in: {start_cooldown//30 + 1}s", (img.shape[1]//2 - 100, 50),
+                cv2.putText(img, f"Starting in: {start_cooldown//30 + 1}s", (img.shape[1]//2 - 300, 50),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             
             # Draw player selection screen
@@ -66,20 +69,27 @@ def main():
                     num_players = num_fingers
                     game_state = GameState.PLAYING
                     print(f"Selected {num_players} player game")
-                    selection_cooldown = 60  # ~2 second cooldown at 30fps
+                    selection_cooldown = 60
                     last_finger_count = num_fingers
 
         elif game_state == GameState.PLAYING:
             # Draw the game board
             img = draw_board(img, game.board)
             
-            # Display current player only
-            player_text = "X's turn" if game.current_player == 1 else "O's turn"
+            # Display current player and game info
+            if num_players == 1:
+                if game.current_player == 1:
+                    player_text = "Your turn (X)"
+                else:
+                    player_text = "AI's turn (O)"
+            else:
+                player_text = "Player 1 (X)" if game.current_player == 1 else "Player 2 (O)"
+            
             cv2.putText(img, player_text, (10, 40),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             
-            # Handle player moves
-            if lmList and fingers and selection_cooldown == 0:
+            # Handle player moves for human players
+            if (game.current_player == 1 or num_players == 2) and lmList and fingers and selection_cooldown == 0:
                 # Get hand palm position (landmark 9)
                 hand_palm = lmList[9]
                 x, y = hand_palm[0], hand_palm[1]
@@ -96,22 +106,27 @@ def main():
                             game.make_move(row, col)
                             selection_cooldown = 30  # ~1 second cooldown
             
+            # AI move for single player game
+            elif num_players == 1 and game.current_player == 2 and not game.winner and selection_cooldown == 0:
+                print("AI making move...")
+                game.ai_move()
+                selection_cooldown = 30  # Small delay after AI move
+            
             # Check for game over
-            if game.winner:
+            if game.winner is not None:
                 game_state = GameState.GAME_OVER
-                selection_cooldown = 30
-            elif np.all(game.board != 0):  # Board is full (draw)
-                game_state = GameState.GAME_OVER
-                selection_cooldown = 30
+                selection_cooldown = 60
 
         elif game_state == GameState.GAME_OVER:
             # Draw game over screen
             img = draw_board(img, game.board)
             
-            if game.winner:
-                winner_text = f"Player {game.winner} wins!"
-            else:
+            if game.winner == 0:
                 winner_text = "It's a draw!"
+            elif num_players == 1:
+                winner_text = "You win!" if game.winner == 1 else "AI wins!"
+            else:
+                winner_text = f"Player {game.winner} wins!"
             
             cv2.putText(img, winner_text, (50, 100),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
@@ -128,7 +143,7 @@ def main():
                     game_state = GameState.SELECTING_PLAYERS
                     num_players = None
                     start_cooldown = 150  # Reset the initial cooldown
-                    selection_cooldown = 30
+                    selection_cooldown = 60
                 elif num_fingers == 2:
                     break
 
