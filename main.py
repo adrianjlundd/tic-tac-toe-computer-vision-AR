@@ -47,7 +47,7 @@ def main():
             if start_cooldown > 0:
                 start_cooldown -= 1
                 cv2.putText(img, f"Starting in: {start_cooldown//30 + 1}s", 
-                            (img.shape[1]//2 - 100, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                            (img.shape[1]//2 - 300, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             
             cv2.putText(img, "Select number of players:", (50, 100),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
