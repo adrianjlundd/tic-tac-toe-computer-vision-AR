@@ -3,10 +3,9 @@ import random
 
 class TicTacToe:
     def __init__(self):
-        self.board = np.zeros((3, 3), dtype=int)  # 0 = empty, 1 = X, 2 = O
+        self.board = np.zeros((3, 3), dtype=int)
         self.current_player = 1
         self.winner = None
-        self.difficulty = "random"  # "random" or "minimax"
 
     def make_move(self, row, col):
         if self.board[row, col] == 0 and not self.winner:
@@ -14,16 +13,12 @@ class TicTacToe:
             if self.check_winner():
                 self.winner = self.current_player
             elif self.is_board_full():
-                self.winner = 0  # Draw
+                self.winner = 0
             else:
-                self.current_player = 3 - self.current_player  # change player
+                self.current_player = 3 - self.current_player
 
     def ai_move(self):
         """AI makes a random move"""
-        return self.random_move()
-        
-    def random_move(self):
-        """AI makes a random valid move"""
         empty_cells = [(r, c) for r in range(3) for c in range(3) if self.board[r, c] == 0]
         if empty_cells:
             row, col = random.choice(empty_cells)
