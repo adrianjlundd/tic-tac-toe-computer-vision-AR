@@ -18,7 +18,7 @@ def main():
     num_players = None
     last_finger_count = 0
     selection_cooldown = 0
-    start_cooldown = 150
+    start_cooldown = 150  # 5 seconds cooldown at ~30fps   150/30 = 50 s
 
     print("Press 'q' to quit")
 
@@ -43,15 +43,14 @@ def main():
         if selection_cooldown > 0:
             selection_cooldown -= 1
 
-        # Initial cooldown period
-        if start_cooldown > 0:
-            start_cooldown -= 1
-            cv2.putText(img, f"Starting in: {start_cooldown//30 + 1}s", (img.shape[1]//2 - 100, 50),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-
         # Game state machine
         if game_state == GameState.SELECTING_PLAYERS:
+            # Initial cooldown period - show countdown
+            if start_cooldown > 0:
+                start_cooldown -= 1
+                cv2.putText(img, f"Starting in: {start_cooldown//30 + 1}s", (img.shape[1]//2 - 100, 50),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            
             # Draw player selection screen
             cv2.putText(img, "Select number of players:", (50, 100),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
@@ -60,14 +59,14 @@ def main():
             cv2.putText(img, "2 fingers = 2 players", (50, 200),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             
-            # Check for player selection with cooldown
-            if fingers and selection_cooldown == 0:
+            # Check for player selection with cooldown (only after initial cooldown)
+            if fingers and selection_cooldown == 0 and start_cooldown == 0:
                 num_fingers = sum(fingers)
                 if num_fingers in [1, 2] and num_fingers != last_finger_count:
                     num_players = num_fingers
                     game_state = GameState.PLAYING
                     print(f"Selected {num_players} player game")
-                    selection_cooldown = 60  # ~1 second cooldown at 30fps
+                    selection_cooldown = 60  # ~2 second cooldown at 30fps
                     last_finger_count = num_fingers
 
         elif game_state == GameState.PLAYING:
@@ -81,21 +80,21 @@ def main():
             
             # Handle player moves
             if lmList and fingers and selection_cooldown == 0:
-                # Get index finger tip position (landmark 8)
+                # Get hand palm position (landmark 9)
                 hand_palm = lmList[9]
                 x, y = hand_palm[0], hand_palm[1]
                 
                 # Draw cursor
                 cv2.circle(img, (x, y), 10, (255, 0, 0), -1)
                 
-                # Check if finger is pointing (index finger up, others down) changed this to all fingers
-                if fingers == [1, 1, 1, 1, 1]:  # Only index finger up, changed to all fingers
+                # Check if all fingers are up
+                if fingers == [1, 1, 1, 1, 1]:  # All fingers up
                     row, col = get_cell_from_pos(x, y, img.shape)
                     if row is not None and col is not None:
                         # Make move if cell is empty
                         if game.board[row, col] == 0 and not game.winner:
                             game.make_move(row, col)
-                            selection_cooldown = 30  # ~0.5 second cooldown
+                            selection_cooldown = 30  # ~1 second cooldown
             
             # Check for game over
             if game.winner:
@@ -128,6 +127,7 @@ def main():
                     game.reset()
                     game_state = GameState.SELECTING_PLAYERS
                     num_players = None
+                    start_cooldown = 150  # Reset the initial cooldown
                     selection_cooldown = 30
                 elif num_fingers == 2:
                     break
