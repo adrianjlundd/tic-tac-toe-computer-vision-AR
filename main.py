@@ -18,6 +18,7 @@ def main():
     num_players = None
     last_finger_count = 0
     selection_cooldown = 0
+    start_cooldown = 150
 
     print("Press 'q' to quit")
 
@@ -41,6 +42,13 @@ def main():
         # Cooldown for selection to avoid multiple detections
         if selection_cooldown > 0:
             selection_cooldown -= 1
+
+        # Initial cooldown period
+        if start_cooldown > 0:
+            start_cooldown -= 1
+            cv2.putText(img, f"Starting in: {start_cooldown//30 + 1}s", (img.shape[1]//2 - 100, 50),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
 
         # Game state machine
         if game_state == GameState.SELECTING_PLAYERS:
@@ -80,8 +88,8 @@ def main():
                 # Draw cursor
                 cv2.circle(img, (x, y), 10, (255, 0, 0), -1)
                 
-                # Check if finger is pointing (index finger up, others down)
-                if fingers == [1, 1, 1, 1, 1]:  # Only index finger up
+                # Check if finger is pointing (index finger up, others down) changed this to all fingers
+                if fingers == [1, 1, 1, 1, 1]:  # Only index finger up, changed to all fingers
                     row, col = get_cell_from_pos(x, y, img.shape)
                     if row is not None and col is not None:
                         # Make move if cell is empty
@@ -125,12 +133,12 @@ def main():
                     break
 
         # Show image
-        cv2.imshow("Tic Tac Vision", img)
+        cv2.imshow("Tic Tac Toe Vision", img)
 
         # Quit with 'q' key
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
-            print("Quitting")
+            print("Farvel")
             break
 
     cap.release()
