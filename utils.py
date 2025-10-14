@@ -10,7 +10,7 @@ def draw_board(img, board):
         cv2.line(img, (0, i * cell), (size, i * cell), (255, 255, 255), 2)
         cv2.line(img, (i * cell, 0), (i * cell, size), (255, 255, 255), 2)
 
-    #  X and O on board
+    # X and O on board
     for r in range(3):
         for c in range(3):
             x_center = c * cell + cell // 2
@@ -23,9 +23,8 @@ def draw_board(img, board):
 
     return img
 
-#detecting hand position (x,y)
+# Detecting hand position (x,y)
 def get_cell_from_pos(x, y, frame_shape):
-    
     h, w, _ = frame_shape
     size = min(h, w)
     cell_size = size // 3

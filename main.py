@@ -1,8 +1,8 @@
 import cv2
+import numpy as np
 from hand_tracker import HandTracker
 from game import TicTacToe
 from utils import draw_board, get_cell_from_pos
-import numpy as np
 
 class GameState:
     SELECTING_PLAYERS = 0
@@ -16,6 +16,8 @@ def main():
     
     game_state = GameState.SELECTING_PLAYERS
     num_players = None
+    last_finger_count = 0
+    selection_cooldown = 0
 
     print("Press 'q' to quit")
 
@@ -31,41 +33,46 @@ def main():
         # Find hand and fingers
         lmList, fingers, img = tracker.find_hand(img)
 
-        # Display fingers count
-        if fingers:
-            num_fingers = sum(fingers)
-            cv2.putText(img, f"Fingers: {num_fingers}", (10, 40),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        # Display fingers list in top-right corner
+        if fingers is not None:
+            cv2.putText(img, f"Fingers: {fingers}", (img.shape[1] - 300, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        
+        # Cooldown for selection to avoid multiple detections
+        if selection_cooldown > 0:
+            selection_cooldown -= 1
 
         # Game state machine
         if game_state == GameState.SELECTING_PLAYERS:
             # Draw player selection screen
             cv2.putText(img, "Select number of players:", (50, 100),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            cv2.putText(img, "1 finger = 1 player", (50, 150),
+            cv2.putText(img, "1 finger = 1 player (vs AI)", (50, 150),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             cv2.putText(img, "2 fingers = 2 players", (50, 200),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             
-            # Check for player selection
-            if fingers and sum(fingers) in [1, 2]:
-                num_players = sum(fingers)
-                game_state = GameState.PLAYING
-                print(f"Selected {num_players} player game")
-                # Small delay to avoid multiple detections
-                cv2.waitKey(500)
+            # Check for player selection with cooldown
+            if fingers and selection_cooldown == 0:
+                num_fingers = sum(fingers)
+                if num_fingers in [1, 2] and num_fingers != last_finger_count:
+                    num_players = num_fingers
+                    game_state = GameState.PLAYING
+                    print(f"Selected {num_players} player game")
+                    selection_cooldown = 30  # ~1 second cooldown at 30fps
+                    last_finger_count = num_fingers
 
         elif game_state == GameState.PLAYING:
             # Draw the game board
             img = draw_board(img, game.board)
             
-            # Display current player
+            # Display current player only
             player_text = "X's turn" if game.current_player == 1 else "O's turn"
             cv2.putText(img, player_text, (10, 40),
                         cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
             
-            # Handle player moves (for now, just basic detection)
-            if lmList and fingers:
+            # Handle player moves
+            if lmList and fingers and selection_cooldown == 0:
                 # Get index finger tip position (landmark 8)
                 index_finger_tip = lmList[8]
                 x, y = index_finger_tip[0], index_finger_tip[1]
@@ -80,14 +87,15 @@ def main():
                         # Make move if cell is empty
                         if game.board[row, col] == 0 and not game.winner:
                             game.make_move(row, col)
-                            # Small delay to avoid multiple moves
-                            cv2.waitKey(300)
+                            selection_cooldown = 15  # ~0.5 second cooldown
             
             # Check for game over
             if game.winner:
                 game_state = GameState.GAME_OVER
+                selection_cooldown = 30
             elif np.all(game.board != 0):  # Board is full (draw)
                 game_state = GameState.GAME_OVER
+                selection_cooldown = 30
 
         elif game_state == GameState.GAME_OVER:
             # Draw game over screen
@@ -105,22 +113,19 @@ def main():
             cv2.putText(img, "Show 2 fingers to quit", (50, 200),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             
-            # Check for restart or quit
-            if fingers and sum(fingers) == 1:
-                game.reset()
-                game_state = GameState.SELECTING_PLAYERS
-                num_players = None
-                cv2.waitKey(500)
-            elif fingers and sum(fingers) == 2:
-                break
-
-        # Display current game state
-        state_text = f"State: {['Selecting', 'Playing', 'Game Over'][game_state]}"
-        cv2.putText(img, state_text, (10, img.shape[0] - 20),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            # Check for restart or quit with cooldown
+            if fingers and selection_cooldown == 0:
+                num_fingers = sum(fingers)
+                if num_fingers == 1:
+                    game.reset()
+                    game_state = GameState.SELECTING_PLAYERS
+                    num_players = None
+                    selection_cooldown = 30
+                elif num_fingers == 2:
+                    break
 
         # Show image
-        cv2.imshow("Tic Tac Toe Vision", img)
+        cv2.imshow("Tic Tac Vision", img)
 
         # Quit with 'q' key
         key = cv2.waitKey(1) & 0xFF
