@@ -3,16 +3,12 @@
 An interactive Tic Tac Toe game controlled entirely by hand gestures, built with Python, OpenCV, MediaPipe, and cvzone.  
 Play against another person or an AI opponent (random or minimax difficulty), using only your hand and a webcam.
 
----
+
 
 ## Project Overview
 
 The project combines computer vision and simple game AI into an augmented reality experience.  
 Players use hand gestures to navigate menus, choose game modes, and place moves directly on the virtual board.
-
----
-
-## Project Structure
 
 ## Project Structure
 
@@ -40,7 +36,7 @@ tic-tac-computer-vision/
 ├── .vscode/
 ├── docs/ 
 │ └── README.md
-
+|
 ├── game/ 
 │ ├── __init__.py
 │ ├── ai.py
@@ -97,24 +93,22 @@ pip install -r requirements.txt
 # 4. Run the program
 python main.py
 ```
+## How to Play
 
-windows
+1. Ensure your webcam is active and visible to the program.  
+2. When the game starts, use hand gestures to select the mode:
+   - **1 finger**: Single-player mode  
+   - **2 fingers**: Two-player mode  
+3. In single-player mode:
+   - **1 finger**: Easy AI (random)  
+   - **2 fingers**: Hard AI (minimax)  
+4. To place a move:
+   - Keep your hand closed as a **fist** while moving it over the desired square.  
+   - When the fist is positioned over the square you want, **open all five fingers** to confirm and place the mark.
+5. After the game ends:
+   - **1 finger**: Play again  
+   - **2 fingers**: Quit  
+6. You can also press **q** at any time to exit the game.
 
-py -3.12 -m venv venv
 
-linus/macOS
-
-python3.12 -m venv venv
-
-windows
-venv\Scripts\Activate.ps1
-
-linus/macOS
-source venv/bin/activate
-
-python -m pip install --upgrade pip
-
-
-pip install -r requirements.txt
-
-C:\Users\adria\NTNU\Prosjekter\tic-tac-computer-vision\venv\Scripts\Activate.ps1
+MIT License © 2025 Adrian Jacobsen Lund
