@@ -14,31 +14,50 @@ Players use hand gestures to navigate menus, choose game modes, and place moves 
 
 ## Project Structure
 
+## Project Structure
+
+- `.vscode/` – VSCode configuration files
+- `docs/` – Project documentation and progress screenshots
+  - [README.md](docs/README.md)
+- `game/` – Game logic and AI
+  - [_init_.py](game/__init__.py)
+  - [ai.py](game/ai.py) – Minimax and random AI
+  - [tic_tac_toe.py](game/tic_tac_toe.py) – Core game logic
+- `gui/` – User interface and board rendering
+  - [board_drawer.py](gui/board_drawer.py)
+  - [ui_helpers.py](gui/ui_helpers.py)
+- `tracker/` – Hand detection and gesture tracking
+  - [hand_tracker.py](tracker/hand_tracker.py)
+- [main.py](main.py) – Entry point: initializes camera, UI, and game flow
+- [requirements.txt](requirements.txt) – Dependencies for Python environment
+- `LICENSE` – License information
+- `README.md` – This file
+
+
 ```
 tic-tac-computer-vision/
 │
-├── .vscode/ # VSCode configuration files
-├── docs/ # Project documentation and progress screenshots
-│ └── [README.md](docs/READEME.md) 
-│
-├── game/ # Game logic and AI
-│ ├── [__init__.py](game/__init__.py)
-│ ├── [ai.py](game/ai.py) # Minimax and random AI
-│ └── [tic_tac_toe.py](game/tic_tac_toe.py) # Core game logic
-│
-├── gui/ # User interface and board rendering
-│ ├── [board_drawer.py](gui/board_drawer.py)
-│ └── [ui_helpers.py](gui/ui_helpers.py)
-│
-├── tracker/ # Hand detection and gesture tracking
-│ └── [hand_tracker.py](tracker/hand_tracker.py)
-│
-├── [main.py](main.py) # Entry point: initializes camera, UI, and game flow
-├── [requirements.txt](requirements.txt) # Dependencies for Python environment
-├── LICENSE # License information
-└── README.md # This file
-```
+├── .vscode/
+├── docs/ 
+│ └── README.md
 
+├── game/ 
+│ ├── __init__.py
+│ ├── ai.py
+│ └── tic_tac_toe.py
+│
+├── gui/
+│ ├── board_drawer.py
+│ └── ui_helpers.py
+│
+├── tracker/
+│ └── hand_tracker.py
+│
+├── main.py
+├── requirements.txt
+├── LICENSE 
+└── README.md 
+```
 
 ## Installation and Setup
 
