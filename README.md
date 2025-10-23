@@ -1,5 +1,7 @@
 # tic-tac-computer-vision
 
+## How to run yourself
+
 
 windows
 
