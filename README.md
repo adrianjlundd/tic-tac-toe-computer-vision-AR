@@ -3,6 +3,7 @@
 An interactive Tic Tac Toe game controlled entirely by hand gestures, built with Python, OpenCV, MediaPipe, and cvzone.  
 Play against another person or an AI opponent (random or minimax difficulty), using only your hand and a webcam.
 
+The minimax algorithm and some of the game functions is based on Cledersonbc's minimax algorithm for tic-tac-toe. too get a more in depth explenation about this see: https://github.com/Cledersonbc/tic-tac-toe-minimax
 
 
 ## Project Overview
